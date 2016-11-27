@@ -64,7 +64,8 @@ int print_vol(const char *card, const char *mix)
 	}
 	int vol = (int) snd_ctl_elem_value_get_integer(control, 0);
 	if (vol >= 0) {
-		fprintf(stdout, "%d\n", vol);
+		printf("%d\n", vol);
+		fflush(stdout);
 	} else {
 		fprintf(stderr, "Failed to read volume\n");
 		err = vol;
