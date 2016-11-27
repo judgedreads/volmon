@@ -8,4 +8,10 @@ volmon: volmon.c
 clean:
 	rm -f volmon
 
-.PHONY: clean
+install: volmon
+	cp volmon ${HOME}/bin/
+
+uninstall:
+	rm ${HOME}/bin/volmon -f
+
+.PHONY: clean install uninstall

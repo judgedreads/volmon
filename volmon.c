@@ -58,7 +58,7 @@ int print_vol(const char *card, const char *mix)
 
 	err = snd_hctl_elem_read(elem, control);
 	if (err != 0) {
-		fprintf(stderr, "Failed to read volume");
+		fprintf(stderr, "Failed to read volume\n");
 		snd_hctl_close(hctl);
 		return err;
 	}
@@ -66,7 +66,7 @@ int print_vol(const char *card, const char *mix)
 	if (vol >= 0) {
 		fprintf(stdout, "%d\n", vol);
 	} else {
-		fprintf(stderr, "Failed to read volume");
+		fprintf(stderr, "Failed to read volume\n");
 		err = vol;
 	}
 	snd_hctl_close(hctl);
@@ -121,6 +121,10 @@ int main(int argc, char *argv[])
 	snd_ctl_t *ctl;
 	int err = 0;
 
+	err = print_vol(card, mix);
+	if (err < 0)
+		return err;
+
 	err = subscribe(card, &ctl);
 	if (err < 0)
 		return err;
@@ -128,9 +132,6 @@ int main(int argc, char *argv[])
 	struct pollfd fd;
 	snd_ctl_poll_descriptors(ctl, &fd, 1);
 	while (1) {
-		err = print_vol(card, mix);
-		if (err < 0)
-			break;
 		err = poll(&fd, 1, -1);
 		if (err <= 0) {
 			break;
@@ -139,12 +140,12 @@ int main(int argc, char *argv[])
 		err = snd_ctl_poll_descriptors_revents(ctl, &fd, 1, &revents);
 		if (err != 0)
 			break;
-		if (revents & POLLIN) {
-			err = handle_event(ctl, card, mix);
-			if (err != 0) {
-				fprintf(stderr, "Failed to handle volume event");
-				break;
-			}
+		if (!revents & POLLIN)
+			continue;
+		err = handle_event(ctl, card, mix);
+		if (err != 0) {
+			fprintf(stderr, "Failed to handle volume event\n");
+			break;
 		}
 	}
 
